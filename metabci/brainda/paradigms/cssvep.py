@@ -1,5 +1,6 @@
 from .base import BaseTimeEncodingParadigm
 
+
 class cSSVEP(BaseTimeEncodingParadigm):
 
     def is_valid(self, dataset):
