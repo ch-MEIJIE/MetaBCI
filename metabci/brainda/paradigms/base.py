@@ -273,6 +273,7 @@ class BaseParadigm(metaclass=ABCMeta):
                         # retrieve X, y and meta
                         X = epochs.get_data() * 1e6  # micro-volt default
                         y = epochs.events[:, -1]
+                        x_stamps = epochs.events[:, 0]
                         trial_ids = np.argwhere(
                             events[:, -1] == list(epochs.event_id.values())[0]
                         ).reshape((-1))
@@ -282,6 +283,7 @@ class BaseParadigm(metaclass=ABCMeta):
                                 "session": [session] * len(epochs),
                                 "run": [run] * len(epochs),
                                 "event": [event_name] * len(epochs),
+                                "event_stamp": x_stamps,
                                 "trial_id": trial_ids,
                                 "dataset": [dataset.dataset_code] * len(epochs),
                             }
@@ -701,6 +703,13 @@ class BaseTimeEncodingParadigm(BaseParadigm):
                                     "code": [unit_encode]
                                 }
                             )
+                                                       
+                            if self._data_hook:
+                                unit_X, unit_y, meta, caches = self._data_hook(
+                                    unit_X, unit_y, meta, caches)
+                            elif hasattr(dataset, "data_hook"):
+                                unit_X, unit_y, meta, caches = dataset.data_hook(
+                                    unit_X, unit_y, meta, caches)
 
                             # collecting data
                             pre_X = Xs.get(event_name)
@@ -725,12 +734,12 @@ class BaseTimeEncodingParadigm(BaseParadigm):
                             else:
                                 metas[event_name] = meta
 
-                            if self._data_hook:
-                                Xs, ys, metas, caches = self._data_hook(
-                                    Xs, ys, metas, caches)
-                            elif hasattr(dataset, "data_hook"):
-                                Xs, ys, metas, caches = dataset.data_hook(
-                                    Xs, ys, metas, caches)
+                            # if self._data_hook:
+                            #     Xs, ys, metas, caches = self._data_hook(
+                            #         Xs, ys, metas, caches)
+                            # elif hasattr(dataset, "data_hook"):
+                            #     Xs, ys, metas, caches = dataset.data_hook(
+                            #         Xs, ys, metas, caches)
         return Xs, ys, metas
 
     @verbose
