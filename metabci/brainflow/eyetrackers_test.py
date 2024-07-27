@@ -1,18 +1,22 @@
 import numpy as np
 import time
-from metabci.brainflow.eyetrackers import Marker
-from eyetrackers import TobiiSpectrum
+from metabci.brainflow.amplifiers import Marker
+from metabci.brainflow.eyetrackers import TobiiSpectrum
 from metabci.brainflow.workers import ProcessWorker
+
 
 class TobiiWorker(ProcessWorker):
     def __init__(
             self,
             timeout: float = 0.001,
-            name: str | None = None):
+            name: str | None = None,
+            stim_locs: dict | None = None
+    ):
         super().__init__(timeout, name)
         self.right_eye = None
         self.left_eye = None
-    
+        self.stim_locs = stim_locs
+
     def pre(self):
         pass
 
@@ -28,6 +32,14 @@ class TobiiWorker(ProcessWorker):
 
     def post(self):
         pass
+
+    def find_squares(self, point):
+        x, y = point
+        for key, ((x1, y1), (x2, y2)) in self.stim_locs.items():
+            if x1 <= x <= x2 and y1 <= y <= y2:
+                return key
+        return None
+
 
 if __name__ == "__main__":
     stim_label = [i for i in range(1, 255)]
