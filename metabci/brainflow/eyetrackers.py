@@ -62,10 +62,16 @@ class TobiiSpectrum(BaseAmplifier):
             continue
         gaze_data_frame = self.gaze_data.copy()
         self.gaze_data = None  # clear gaze data
-        # Channel 1: left eye, Channel 2: right eye Channel 3: trigger
+        right_gaze_point_on_display_area = gaze_data_frame["right_gaze_point_on_display_area"]
+        left_gaze_point_on_display_area = gaze_data_frame["left_gaze_point_on_display_area"]
+        # real gaze point on display area by combining left and right eye
+        gaze_point_on_display_area = [
+            (right_gaze_point_on_display_area[0] + left_gaze_point_on_display_area[0]) / 2,
+            (right_gaze_point_on_display_area[1] + left_gaze_point_on_display_area[1]) / 2
+        ]
+        # Channel 1: POS_X, Channel 2: POS_Y 3: trigger
         sample = list()
-        sample.extend([*gaze_data_frame["left_gaze_point_on_display_area"]])
-        sample.extend([*gaze_data_frame["right_gaze_point_on_display_area"]])
+        sample.extend([*gaze_point_on_display_area])
         if self.trigger_data is None:
             sample.append(0)
         else:

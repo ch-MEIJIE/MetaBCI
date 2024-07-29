@@ -201,7 +201,7 @@ class BaseAmplifier:
                 if samples:
                     self._detect_event(samples)
             except Exception:
-                pass
+                raise Exception("Error in the inner loop")
         logger_amp.info("exit the inner loop")
 
     def stop(self):

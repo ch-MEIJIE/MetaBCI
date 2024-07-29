@@ -106,5 +106,3 @@ for model_name in models:
         loo_accs.append(
             balanced_accuracy_score(testY, pred_labels))
     print("Model:{} LOO Acc:{:.2f}".format(model_name, np.mean(loo_accs)))
-
-
