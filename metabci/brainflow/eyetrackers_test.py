@@ -11,8 +11,8 @@ STIM_POS = {
     "1": ((0.383, 0.727), (0.453, 0.850)),
     "2": ((0.222, 0.329), (0.292, 0.455)),
     "3": ((0.708, 0.329), (0.778, 0.455)),
-    "4": ((0.222, 0.547), (0.292, 0.669)),
-    "5": ((0.708, 0.547), (0.778, 0.669)),
+    "4": ((0.708, 0.547), (0.778, 0.669)),
+    "5": ((0.222, 0.547), (0.292, 0.669)),
     "6": ((0.465, 0.547), (0.544, 0.669)),
     "7": ((0.546, 0.727), (0.616, 0.850)),
     "8": ((0.305, 0.305), (0.694, 0.696))
@@ -237,11 +237,12 @@ class TobiiWorker(ProcessWorker):
 
     def consume(self, data):
         data = np.array(data, dtype=np.float64)
+        data = data[:, :2]
         fixation = self.eye_filter.filter_process(data)
         p_label = self.find_squares(fixation)
-        print('Predicted label: {}'.format(p_label[0]))
-        if self.outlet.have_consumers() and p_label != "8":
-            self.outlet.push_sample(p_label)
+        print('Predicted label: {}'.format(p_label))
+        if self.outlet.have_consumers() and p_label != 8 and p_label is not None:
+            self.outlet.push_sample([p_label])
 
     def post(self):
         pass
@@ -250,7 +251,7 @@ class TobiiWorker(ProcessWorker):
         x, y = point[0], point[1]
         for key, ((x1, y1), (x2, y2)) in self.stim_locs.items():
             if x1 <= x <= x2 and y1 <= y <= y2:
-                return key
+                return int(key)
         return None
 
 
@@ -260,7 +261,7 @@ if __name__ == "__main__":
     tobii_worker = TobiiWorker(0.01, "tobii_worker", stim_locs=STIM_POS)
     tobii_marker = Marker(
         interval=[0, 0.5],
-        srate=600,
+        srate=eye_tracker_srate,
         events=stim_label,
     )
     tobii = TobiiSpectrum("Tobii Spectrum", eye_tracker_srate)
